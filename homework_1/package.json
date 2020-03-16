@@ -1,0 +1,19 @@
+{
+    "name": "homework1",
+    "version": "1.0.0",
+    "description": "It's my first homework!",
+    "main": "index.js",
+    "scripts": {
+        "start:pretty": "node index --colors=\"[\\\"yellow\\\", \\\"red\\\"]\" --deep=1",
+        "start:deep": "node index --deep=5",
+        "start:default": "node index",
+        "start:rainbow": "node index --colors=\"[\\\"green\\\", \\\"yellow\\\", \\\"cyan\\\", \\\"white\\\", \\\"magenta\\\", \\\"red\\\"]\"",
+        "test": "echo \"Error: no test specified\" && exit 1"
+    },
+    "author": "Roman",
+    "license": "ISC",
+    "dependencies": {
+        "chalk": "^3.0.0",
+        "minimist": "^1.2.0"
+    }
+}
