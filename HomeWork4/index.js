@@ -15,7 +15,7 @@ setInterval(() => {
             `${key}: ${requestsData[key].count} (${requestsData[key].agents.join(", ")})\n`,
             () => {}
         );
-}, 1000);
+}, 60000);
 
 const server = http.createServer(async (req, res) => {
     const { url, method } = req;
