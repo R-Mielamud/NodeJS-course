@@ -19,13 +19,28 @@ setInterval(() => {
 
 const server = http.createServer(async (req, res) => {
     const { url, method } = req;
-    let route = new URL(url, `http://${req.headers.host}`);
+    const route = new URL(url, `http://${req.headers.host}`);
     let { pathname } = route;
 
     console.log(`[${method}] ${url}`);
 
     pathname = pathname[pathname.length - 1] === "/" && pathname !== "/" ?
         pathname.slice(0, -1) : pathname;
+
+    const start = (new Date()) / 1000;
+
+    function onFinish() {
+        const end = (new Date()) / 1000;
+        const time = end - start;
+        fs.appendFile(path.join(__dirname, "assets_requests_log.httplog"), `${start} > ${end} : ${time} (${res.statusCode})\n`, () => {});
+    }
+
+    res.on("finish", onFinish);
+
+    res.on("close", () => {
+        res.removeListener("finish", onFinish);
+        onFinish();
+    });
 
     switch (method) {
         case "GET":

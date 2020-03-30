@@ -50,18 +50,13 @@ exports.assetsController = (req, res, reqPath) => {
         const splited = reqPath.split("/");
         const pathToFolder = path.join(__dirname, "assets/", ...splited.slice(0, -1));
         const file = splited[splited.length - 1];
-        const start = Date.now() / 1000;
-        const ws = fs.createWriteStream(path.join(__dirname, "assets_requests_log.httplog"), { flags: "a" });
 
-        fs.readdir(pathToFolder, (error, files) => {
-            if (error || !files.includes(file)) {
+        fs.stat(path.join(pathToFolder, file), (error, stat) => {
+            if (error || !stat.isFile()) {
                 res.statusCode = 404;
                 res.end();
-                const end = Date.now() / 1000;
-                const time = end - start;
-                ws.end(`${start} > ${end} : ${time} (404)\n`);
                 resolve();
-            } else {
+            } else if (stat.isFile()) {
                 const stream = fs.createReadStream(path.join(pathToFolder, file));
                 let content = "";
 
@@ -74,9 +69,6 @@ exports.assetsController = (req, res, reqPath) => {
                     const type = await fileType.fromBuffer(Buffer.from(content, "utf8"));
                     if (type) res.setHeader("content-type", type.mime);
                     res.end();
-                    const end = Date.now() / 1000;
-                    const time = end - start;
-                    ws.end(`${start} > ${end} : ${time} (${res.statusCode})\n`);
                     resolve();
                 });
             }
@@ -88,12 +80,8 @@ exports.getMessagesController = async (req, res, params) => {
     const skip = (params.skip && !isNaN(+params.skip)) ? +params.skip : 10;
     const limit = (params.limit && !isNaN(+params.limit)) ? +params.limit + 1 : Infinity;
     const sort = (params.sort && Message.SLOTS().includes(params.sort)) ? params.sort : "time";
-
-    let all = [];
-    if (limit !== Infinity) all = (await Message.diapazone(0, limit)).content;
-    else all = await Message.all();
-
-    const sorted = all.sort((a, b) => a[sort] < b[sort] ? -1 : 1);
+    let sorted = (await Message.all()).content.sort((a, b) => a[sort] < b[sort] ? -1 : 1);
+    if (limit !== Infinity) sorted = sorted.slice(0, limit + 1);
 
     res.write("[");
 
