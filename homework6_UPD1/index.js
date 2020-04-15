@@ -16,7 +16,7 @@ setInterval(() => {
     }
 
     writeStream.end();
-}, 1000);
+}, 60000);
 
 server.locals.messages = [];
 
