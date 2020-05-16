@@ -1,0 +1,41 @@
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>{{ title }}</title>
+
+        <style>
+            body {
+                background-color: #0C0;
+            }
+
+            .time {
+                color: red;
+            }
+
+            .author {
+                color: orange;
+            }
+
+            .message {
+                color: yellow;
+            }
+        </style>
+    </head>
+
+    <body>
+        {% for message in messages -%}
+            <h2>
+                <span class="time">{{ message.time }} | </span>
+                <span class="author">{{ message.author }}: </span>
+                <span class="message">{{ message.text }}</span>
+            </h2>
+        {%- endfor %}
+
+        <form method="post" action="/message/add">
+            <input name="author">
+            <input name="text">
+            <input type="submit" value="Send">
+        </form>
+    </body>
+</html>
