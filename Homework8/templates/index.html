@@ -1,0 +1,97 @@
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Chat Room</title>
+        <link rel="stylesheet" href="/style.css">
+        <link rel="stylesheet" href="/messages.css">
+    </head>
+
+    <body>
+        <header>
+            <div class="top-menu">
+                <h1 class="top-menu-element">Chat Room</h1>
+
+                {% if not user %}
+                    <h2 class="top-menu-element">Hello, Anonymous</h2>
+
+                    <a class="top-menu-element" href="/register">
+                        <button class="top-menu-button active">Register</button>
+                    </a>
+
+                    <a class="top-menu-element" href="/login">
+                        <button class="top-menu-button inactive">Login</button>
+                    </a>
+                {% else %}
+                    <h2 class="top-menu-element">Hello, {{ user.display }}</h2>
+                    <button class="top-menu-element top-menu-button inactive" id="signout">Sign Out</button>
+                {% endif %}
+            </div>
+        </header>
+
+        <div class="messages-container" id="messages-container"></div>
+
+        {% if user %}
+            <form>
+                <textarea placeholder="Text" cols="20" rows="10"></textarea>
+                <input type="button" value="Write Message" id="write-message">
+            </form>
+        {% endif %}
+
+        <script>
+            document.body.onload = () => {
+                if (document.getElementById("signout")) document.getElementById("signout").onclick = async () => {
+                    await fetch("/api/user/signout", {
+                        method: "POST"
+                    });
+            
+                    window.location.reload();
+                }
+            
+                ;(async () => {
+                    const messagesObj = await fetch(window.location.origin + "/api/message");
+                    const messages = await messagesObj.json();
+                    const container = document.getElementById("messages-container");
+            
+                    for (const message of messages) {
+                        const ElMessage = document.createElement("div");
+            
+                        if (message.author === "{{ user.display }}") {
+                            ElMessage.className = "message my";
+                        } else {
+                            ElMessage.className = "message no-my";
+                        }
+            
+                        ElMessage.innerHTML = `
+                        <div class="message-header">
+                            <div class="header-part">${message.author}</div>
+                            <div class="header-part">${message.updatedAt || message.createdAt}</div>
+                        </div>
+
+                        <div class="message-text">${message.text}</div>
+                        `;
+            
+                        container.appendChild(ElMessage);
+                    }
+                })();
+            
+                if (document.getElementById("write-message")) {
+                    document.getElementById("write-message").onclick = async () => {
+                        await fetch(window.location.origin + "/api/message", {
+                            method: "POST",
+                            headers: {
+                                "Content-Type": "application/json"
+                            },
+                            body: JSON.stringify({
+                                text: document.forms[0].children[0].value,
+                                author: "{{ user.display }}" 
+                            })
+                        });
+
+                        window.location.reload();
+                    }
+                }
+            };
+        </script>
+    </body>
+</html>
