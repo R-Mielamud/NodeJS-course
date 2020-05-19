@@ -21,18 +21,22 @@ router.post("/", valid(messageValidSchema()), async (req, res) => {
         const result = await message.save();
         res.json({ _id: result._id });
     }
+
+    res.status(401).json({ succes: false });
 });
 
 router.put("/", valid(messageUpdValidSchema()), async (req, res) => {
     const message = await Message.findOne(req.body.findBy);
 
-    if (req.session.user.display === message.author) {
+    if (req.session.user && req.session.user.display === message.author) {
         if (message && -(message.createdAt - new Date()) < 1000 * 60 * 5) {
             await message.update(req.body.newData);
         }
 
         res.json({ success: true });
     }
+
+    res.status(!req.session.user ? 401 : 403).json({ success: false });
 });
 
 router.delete("/", valid(messageDelValidSchema()), async (req, res) => {
