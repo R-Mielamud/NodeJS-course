@@ -5,7 +5,7 @@ const router = Router();
 
 router.get("/", async (req, res) => {
     if (req.user) {
-        const user = await User.findOne({ email: req.user.email });
+        const user = req.user;
 
         if (!user) {
             req.user = null;

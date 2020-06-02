@@ -982,3 +982,15 @@ to /new_role with status 200 took 30ms
 PUT request from PostmanRuntime/7.25.0
 to /new_role with status 200 took 12ms
 
+GET request from Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_2) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/83.0.4103.61 Safari/537.36
+to / with status 200 took 12ms
+
+GET request from Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_2) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/83.0.4103.61 Safari/537.36
+to / with status 200 took 12ms
+
+GET request from Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_2) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/83.0.4103.61 Safari/537.36
+to /favicon.ico with status 404 took 2ms
+
+GET request from Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_2) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/83.0.4103.61 Safari/537.36
+to /favicon.ico with status 404 took 3ms
+
