@@ -9,7 +9,7 @@ const router = Router();
 
 router.get("/", valid(paramsValidSchema()), async (req, res) => {
     const messages = await Message
-        .find({ deletedAt: { $exists: false } })
+        .find({ deletedAt: null })
         .sort({ [req.query.sort]: req.query.sortValue })
         .skip(req.query.skip)
         .limit(req.query.limit)

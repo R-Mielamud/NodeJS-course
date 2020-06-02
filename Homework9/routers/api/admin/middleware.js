@@ -1,5 +1,5 @@
 exports.adminRequired = (req, res, next) => {
-    if (eq.user.role === "admin") {
+    if (req.user.role === "admin") {
         return next();
     }
 
