@@ -1,0 +1,44 @@
+.top-menu {
+    position: fixed;
+    top: 0;
+    left: 0;
+    height: 70px;
+    width: 100%;
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    background-color: blue;
+}
+
+.top-menu-element {
+    height: 100%;
+    color: white;
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+}
+
+.top-menu-button {
+    padding: 10px 20px;
+    border: 0 solid #000;
+    border-radius: 10px;
+}
+
+.active {
+    background-color: #a0d;
+    color: white;
+}
+
+.inactive {
+    background-color: #AAA;
+    color: white;
+}
+
+a.top-menu-element {
+    text-decoration: none;
+}
+
+body {
+    padding-top: 80px;
+    font-family: Consolas, sans-serif;
+}
