@@ -11,7 +11,7 @@ exports.userValidSchema = () => ({
 
 exports.messageValidSchema = () => ({
     [Segments.BODY]: Joi.object().keys({
-        author: Joi.string().min(1).max(300).required(),
+        author: Joi.string().regex(/^[0-9a-fA-F]{24}$/).required(),
         text: Joi.string().min(2).max(2000).required(),
         deletedAt: Joi.date()
     }).required()
@@ -20,11 +20,11 @@ exports.messageValidSchema = () => ({
 exports.messageUpdValidSchema = () => ({
     [Segments.BODY]: Joi.object().keys({
         findBy: Joi.object().keys({
-            author: Joi.string().min(1).max(300),
+            author: Joi.string().regex(/^[0-9a-fA-F]{24}$/),
             text: Joi.string().min(2).max(2000)
         }).required(),
         newData: Joi.object().keys({
-            author: Joi.string().min(1).max(300),
+            author: Joi.string().regex(/^[0-9a-fA-F]{24}$/),
             text: Joi.string().min(2).max(2000),
             deletedAt: Joi.date()
         }).required()
@@ -34,7 +34,7 @@ exports.messageUpdValidSchema = () => ({
 exports.messageDelValidSchema = () => ({
     [Segments.BODY]: Joi.object().keys({
         findBy: Joi.object().keys({
-            author: Joi.string().min(1).max(300),
+            author: Joi.string().regex(/^[0-9a-fA-F]{24}$/),
             text: Joi.string().min(2).max(2000)
         }).required()
     }).required()
@@ -48,7 +48,7 @@ exports.adminLockUserValidSchema = () => ({
 
 exports.adminDelMessageValidSchema = () => ({
     [Segments.BODY]: Joi.object().keys({
-        author: Joi.string().required()
+        author: Joi.string().regex(/^[0-9a-fA-F]{24}$/).required()
     })
 });
 

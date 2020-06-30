@@ -1,54 +1,86 @@
 const { Router } = require("express");
 const Message = require("../models/message.model");
 const { valid } = require("../validators/valid");
-const { paramsValid } = require("../validators/paramsValid");
+const { paramsValidSchema } = require("../validators/paramsValid");
 const { messageValidSchema, messageUpdValidSchema, messageDelValidSchema } = require("../validators/fieldsValid");
+const { userRequired } = require("../admin/middleware");
 
 const router = Router();
 
-router.get("/", paramsValid, async (req, res) => {
-    let messages = await Message.find().lean();
-    const sortValues = req.query.sortValue === "asc" ? [1, -1] : [-1, 1]
-    messages = messages.filter(message => !message.deletedAt);
-    messages = messages.slice(req.query.skip, req.query.limit);
-    messages = messages.sort((a, b) => a[req.query.sort] < b[req.query.sort] ? sortValues[0] : sortValues[1]);
+router.get("/", valid(paramsValidSchema()), async (req, res) => {
+    const messages = await Message
+        .find({ deletedAt: null })
+        .sort({ [req.query.sort]: req.query.sortValue })
+        .skip(req.query.skip)
+        .limit(req.query.limit)
+        .lean()
+        .exec();
+
+    await Message.populate(messages, [
+        {
+            path: "author",
+            select: "firstName lastName"
+        }
+    ]);
+
     res.json(messages);
 });
 
-router.post("/", valid(messageValidSchema()), async (req, res) => {
-    if (req.user) {
-        const message = new Message(req.body);
-        const result = await message.save();
-        res.json({ _id: result._id });
-    }
+router.post("/", userRequired, valid(messageValidSchema()), async (req, res) => {
+    const doc = await Message.create(req.body);
 
-    res.status(401).json({ succes: false });
+    await Message.populate(doc, [
+        {
+            path: "author",
+            select: "firstName lastName"
+        }
+    ]);
+
+    res.json(doc);
 });
 
-router.put("/", valid(messageUpdValidSchema()), async (req, res) => {
+router.put("/", userRequired, valid(messageUpdValidSchema()), async (req, res) => {
     const message = await Message.findOne(req.body.findBy);
 
-    if (req.user && (req.user.firstName + " " + req.user.lastName) === message.author) {
+    if (req.user._id.equals(message.author._id)) {
         if (message && -(message.createdAt - new Date()) < 1000 * 60 * 5) {
-            await message.update(req.body.newData);
+            await Message.updateOne(message, req.body);
+
+            await Message.populate(message, [
+                {
+                    path: "author",
+                    select: "firstName lastName"
+                }
+            ]);
+
+            await message.save();
         }
 
-        res.json({ success: true });
+        return res.json(message);
     }
 
-    res.status(!req.session.user ? 401 : 403).json({ success: false });
+    res.status(403).json({ message: "Not author of message", status: 403, error: true });
 });
 
-router.delete("/", valid(messageDelValidSchema()), async (req, res) => {
+router.delete("/", userRequired, valid(messageDelValidSchema()), async (req, res) => {
     const message = Message.findOne(req.body.findBy);
     
-    if ((req.user.firstName + " " + req.user.lastName) === message.author) {
+    if (req.user._id.equals(message.author._id)) {
         if (message) {
             await message.update({ deletedAt: new Date() });
+
+            await Message.populate(message, [
+                {
+                    path: "author",
+                    select: "firstName lastName"
+                }
+            ]);
         }
 
-        res.json({ success: true });
+        return res.json(message);
     }
+
+    res.status(403).json({ message: "Not author of message", status: 403, error: true });
 });
 
 module.exports = router;

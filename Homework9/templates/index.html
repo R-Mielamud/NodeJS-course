@@ -59,7 +59,7 @@
                     for (const message of messages) {
                         const ElMessage = document.createElement("div");
             
-                        if (message.author === "{{ user.firstName + ' ' + user.lastName }}") {
+                        if (message.author._id === "{{ user._id }}") {
                             ElMessage.className = "message my";
                         } else {
                             ElMessage.className = "message no-my";
@@ -67,7 +67,7 @@
             
                         ElMessage.innerHTML = `
                         <div class="message-header">
-                            <div class="header-part">${message.author}</div>
+                            <div class="header-part">${message.author.firstName + " " + message.author.lastName}</div>
                             <div class="header-part">${message.updatedAt || message.createdAt}</div>
                         </div>
 
@@ -87,7 +87,7 @@
                             },
                             body: JSON.stringify({
                                 text: document.forms[0].children[0].value,
-                                author: "{{ user.firstName + ' ' + user.lastName }}" 
+                                author: "{{ user._id }}" 
                             })
                         });
 

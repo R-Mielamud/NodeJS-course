@@ -7,16 +7,8 @@ router.post(
     "/",
     passport.authenticate("local"),
     (req, res) => {
-        if (req.user.locked) {
-            req.logOut();
-
-            return res.json({
-                success: false
-            });
-        }
-
         return res.json({
-            success: true
+            success: req.user ? true : false
         });
     }
 );

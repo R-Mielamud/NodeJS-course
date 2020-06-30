@@ -10,6 +10,7 @@ const passport = require("passport");
 const { Strategy: LocalStrategy } = require("passport-local");
 const User = require("./routers/api/models/user.model");
 const { compareSync } = require("bcryptjs");
+const { yellow } = require("chalk");
 require("dotenv").config();
 
 const server = express();
@@ -20,7 +21,7 @@ nunjucks.configure(path.join(__dirname, "templates"), {
     express: server
 });
 
-mongoose.connect("mongodb://localhost:27017/telephone-book-1", {
+mongoose.connect(process.env.MONGO_URI || "mongodb://localhost:27017/telephone-book-1", {
     useNewUrlParser: true,
     useUnifiedTopology: true,
     useCreateIndex: true
@@ -36,7 +37,7 @@ mongoose.set("debug", true);
 server.use(
     session({
         name: "session",
-        secret: "SecretKey1234567890",
+        secret: process.env.SESSION_SECRET || "SecretKey1234567890",
         resave: false,
         saveUninitialized: false,
         maxAge: 24 * 60 * 60 * 1000,
@@ -63,9 +64,9 @@ passport.use(
             usernameField: "email"
         },
         async (req, email, password, callbackfn) => {
-            const user = await User.findOne({ email: email });
+            const user = await User.findOne({ email: email }).lean().exec();
 
-            if (!user) {
+            if (!user || user.locked) {
                 return callbackfn(null, null);
             }
 
@@ -83,7 +84,7 @@ passport.serializeUser((req, user, callbackfn) => {
 });
 
 passport.deserializeUser(async (req, id, callbackfn) => {
-    const user = await User.findById(id);
+    const user = await User.findById(id).lean().exec();
     return callbackfn(null, user);
 });
 
@@ -142,5 +143,5 @@ const port = process.env.PORT || 3000;
 server.listen(port, "", () => {
     console.log("Web server started on http://127.0.0.1:3000");
     console.log("App is running in " + (process.env.NODE_ENV === "dev" ? "development" : "production") + " mode");
-    console.log("HINT: development mode makes logs about all requests in ./logs/logs.log");
+    console.log(`${yellow("HINT:")} development mode makes logs about all requests in ./logs/logs.log`);
 });

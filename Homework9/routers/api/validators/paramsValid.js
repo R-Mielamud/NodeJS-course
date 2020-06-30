@@ -1,27 +1,10 @@
-exports.paramsValid = (req, res, next) => {
-    if (req.query.limit) {
-        req.query.limit = +req.query.limit;
-    }
+const { Joi, Segments } = require("celebrate");
 
-    if (req.query.skip) {
-        req.query.skip = +req.query.skip;
-    }
-
-    if (!req.query.sort || !(["addedAt", "updatedAt", "deletedAt", "author", "text"].includes(req.query.sort))) {
-        req.query.sort = "addedAt";
-    }
-
-    if (!req.query.sortValue || !(["asc", "desc"].includes(req.query.sortValue))) {
-        req.query.sortValue = "desc";
-    }
-
-    if (!req.query.limit || req.query.limit <= 0 || req.query.limit >= 51) {
-        req.query.limit = 10;
-    }
-
-    if (!req.query.skip || req.query.skip <= 0 || req.query.skip >= 501) {
-        req.query.skip = 0;
-    }
-
-    next();
-}
+exports.paramsValidSchema = () => ({
+    [Segments.QUERY]: Joi.object().keys({
+        limit: Joi.number().max(51).min(0).default(10),
+        skip: Joi.number().max(501).min(0).default(0),
+        sort: Joi.string().trim().valid("addedAt", "updatedAt", "deletedAt", "author", "text").default("addedAt"),
+        sortValue: Joi.string().trim().valid("asc", "desc").default("desc")
+    })
+});

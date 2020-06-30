@@ -2,8 +2,8 @@ const { Schema, model } = require("mongoose");
 
 const message = new Schema({
     author: {
-        type: String,
-        trim: true,
+        type: Schema.Types.ObjectId,
+        ref: "User",
         required: true
     },
     text: {
