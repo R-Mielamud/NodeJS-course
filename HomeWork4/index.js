@@ -4,18 +4,19 @@ const fs = require("fs");
 const path = require("path");
 const qs = require("querystring");
 
-let requestsData = {};
+let requestsData = new Map();
 
 setInterval(() => {
     fs.writeFile(path.join(__dirname, "server_requests_log.httplog"), "", () => {})
 
-    for (const key in requestsData)
+    requestsData.forEach((v, k) => {
         fs.appendFile(
             path.join(__dirname, "server_requests_log.httplog"), 
-            `${key}: ${requestsData[key].count} (${requestsData[key].agents.join(", ")})\n`,
+            `${k}: ${v.count} (${Array.from(v.agents).join(", ")})\n`,
             () => {}
         );
-}, 60000);
+    });
+}, 1000);
 
 const server = http.createServer(async (req, res) => {
     const { url, method } = req;
@@ -85,16 +86,16 @@ const server = http.createServer(async (req, res) => {
             break;
     }
 
-    if (Object.keys(requestsData).includes(String(res.statusCode))) {
-        requestsData[res.statusCode].count++;
-
-        if (!requestsData[res.statusCode].agents.includes(req.headers["user-agent"]))
-            requestsData[res.statusCode].agents.push(req.headers["user-agent"]);
+    if (requestsData.has(res.statusCode)) {
+        requestsData.get(res.statusCode).count++;
+        requestsData.get(res.statusCode).agents.add(req.headers["user-agent"]);
     } else {
-        requestsData[res.statusCode] = {
+        requestsData.set(res.statusCode, {
             count: 1,
-            agents: [req.headers["user-agent"]]
-        }
+            agents: new Set()
+        });
+
+        requestsData.get(res.statusCode).agents.add(req.headers["user-agent"]);
     }
 });
 

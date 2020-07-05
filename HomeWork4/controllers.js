@@ -25,14 +25,16 @@ exports.indexController = async (req, res) => {
     let messages = await Message.all();
     messages = messages.concat(addedMessages);
 
-    for (const m of messages) res.write(`
-        <div>
-            <span class="time">${m.time}</span>
-            <span> | </span>
-            <span class="author">${m.author}: </span>
-            <span class="message">${m.text}</span>
-        </div>
-    `);
+    for (const m of messages) {
+        res.write(`
+            <div>
+                <span class="time">${m.time}</span>
+                <span> | </span>
+                <span class="author">${m.author}: </span>
+                <span class="message">${m.text}</span>
+            </div>
+        `);
+    }
 
     res.end(`
                 <form action="/messages/add/" method="post">
@@ -80,28 +82,29 @@ exports.getMessagesController = async (req, res, params) => {
     const skip = (params.skip && !isNaN(+params.skip)) ? +params.skip : 10;
     const limit = (params.limit && !isNaN(+params.limit)) ? +params.limit + 1 : Infinity;
     const sort = (params.sort && Message.SLOTS().includes(params.sort)) ? params.sort : "time";
-    let sorted = (await Message.all()).content.sort((a, b) => a[sort] < b[sort] ? -1 : 1);
+    let sorted = (await Message.all()).sort((a, b) => a[sort] < b[sort] ? -1 : 1);
     if (limit !== Infinity) sorted = sorted.slice(0, limit + 1);
 
     res.write("[");
 
-    for (let index = 0; index < sorted.length; index += skip) {
-        const data = all.slice(index, index + skip);
-        const startChar = (index === 0 ? "" : ",");
-        const stringContent = JSON.stringify(data).slice(1, -1);
-        res.write(startChar + stringContent);
+    const strings = sorted.map(JSON.stringify);
+
+    for (let index = 0; index < strings.length; index += skip) {
+        const data = strings.slice(index, index + skip);
+        const stringContent = data.join(",");
+        res.write(stringContent + ",");
     }
 
     res.end("]");
 }
 
 exports.addMessageController = async (req, res) => {
-    res.write(`<script>window.location.href = "/"</script>`);
-    let body = "";
-    req.on("data", chunk => body += chunk);
+    if (ALLOWED_BODY_TYPES_ADD.includes(req.headers["content-type"])) {
+        res.write(`<script>window.location.href = "/"</script>`);
+        let body = "";
+        req.on("data", chunk => body += chunk);
 
-    req.on("end", () => {
-        if (ALLOWED_BODY_TYPES_ADD.includes(req.headers["content-type"])) {
+        req.on("end", () => {
             if (req.headers["content-type"] === "application/json") body = JSON.parse(body);
             else if (req.headers["content-type"] === "application/x-www-form-urlencoded") body = qs.parse(body);
 
@@ -119,27 +122,27 @@ exports.addMessageController = async (req, res) => {
             });
 
             res.end();
-        } else {
-            res.statusCode = 404;
-            res.end();
-        }
-    });
+        });
+    } else {
+        res.statusCode = 405;
+        res.end();
+    }
 }
 
 exports.updateMessageController = async (req, res) => {
-    let body = "";
-    req.on("data", chunk => body += chunk);
+    if (ALLOWED_BODY_TYPES_UPD.includes(req.headers["content-type"])) {
+        let body = "";
+        req.on("data", chunk => body += chunk);
 
-    req.on("end", () => {
-        if (ALLOWED_BODY_TYPES_UPD.includes(req.headers["content-type"])) {
+        req.on("end", () => {
             body = JSON.parse(body);
             Message.update(+(req.url.match(/\/[1-9]+\//)[0].slice(1, -1)), body);
             res.end();
-        } else {
-            res.statusCode = 404;
-            return res.end();
-        }
-    });
+        });
+    } else {
+        res.statusCode = 405;
+        return res.end();
+    }
 }
 
 exports.deleteMessageController = async (req, res) => {
