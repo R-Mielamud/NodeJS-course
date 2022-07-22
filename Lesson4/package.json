@@ -9,6 +9,6 @@
   "author": "Roman Melamud",
   "license": "ISC",
   "dependencies": {
-    "file-type": "^14.1.4"
+    "file-type": "^16.5.4"
   }
 }
