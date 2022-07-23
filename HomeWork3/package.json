@@ -10,7 +10,7 @@
   "license": "ISC",
   "dependencies": {
     "chalk": "^3.0.0",
-    "file-type": "^14.1.4",
+    "file-type": "^16.5.4",
     "minimist": "^1.2.5",
     "read-chunk": "^3.2.0"
   }
